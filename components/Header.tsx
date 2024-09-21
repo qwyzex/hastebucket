@@ -1,13 +1,20 @@
 import styles from "@/styles/Header.module.sass";
 import HBIcon from "./HBIcon";
+import { useRouter } from "next/router";
 
 const Header = () => {
+    const router = useRouter();
+
+    const handleReturnHome = () => {
+        router.push("/");
+    };
+
     return (
         <header className={styles.container}>
-            <div>
+            <div onClick={handleReturnHome}>
                 <HBIcon />
             </div>
-            <h1>HASTEBUCKET</h1>
+            <h1 onClick={handleReturnHome}>HASTEBUCKET</h1>
         </header>
     );
 };

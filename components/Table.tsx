@@ -5,8 +5,11 @@ import styles from "@/styles/Table.module.sass";
 import createUniqueBucketId from "@/functions/generateBucketId";
 import { doc, setDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid"; // To generate a unique token
+import { useRouter } from "next/router";
 
 const Table = () => {
+    const router = useRouter();
+
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadProgress, setUploadProgress] = useState<number | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -47,16 +50,6 @@ const Table = () => {
         const bucketid = await createUniqueBucketId();
         const ownerToken = uuidv4(); // Generate a unique owner token
 
-        // Store the token in Firestore
-        await setDoc(doc(db, `buckets/${bucketid}`), {
-            createdAt: new Date(),
-            id: bucketid,
-            type: shareMode === "file" ? "file_upload" : "text_share",
-            size: selectedFile?.size || 0,
-            text: textInput || "",
-            ownerToken, // Save the owner token in Firestore
-        });
-
         // Store the token in localStorage
         localStorage.setItem(`bucket_${bucketid}_token`, ownerToken);
 
@@ -76,19 +69,30 @@ const Table = () => {
                     console.error("Upload failed", error);
                 },
                 () => {
-                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
                         console.log("File available at", downloadURL);
                         setUploadProgress(null);
                         setSelectedFile(null); // Clear the file after upload
 
+                        await setDoc(doc(db, `buckets/${bucketid}`), {
+                            createdAt: new Date(),
+                            id: bucketid,
+                            type: shareMode === "file" ? "file_upload" : "text_share",
+                            filename: selectedFile?.name || null,
+                            size: selectedFile?.size || null,
+                            fileDownloadURL: downloadURL || null,
+                            text: textInput || "",
+                            ownerToken, // Save the owner token in Firestore
+                        });
+
                         // Redirect to the bucket management page
-                        window.location.href = `/bucket/${bucketid}`;
+                        router.push(`/bucket/${bucketid}`);
                     });
                 }
             );
         } else {
             // If text, directly redirect to bucket management page
-            window.location.href = `/bucket/${bucketid}`;
+            router.push(`/bucket/${bucketid}`);
         }
     };
 
@@ -153,7 +157,7 @@ const Table = () => {
                 onClick={handleUpload}
                 disabled={shareMode === "file" ? !selectedFile : !textInput.trim()}
             >
-                {shareMode === "file" ? "Upload File" : "Share Text"}
+                Create Bucket
             </button>
         </div>
     );
