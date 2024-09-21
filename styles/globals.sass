@@ -1,0 +1,44 @@
+:root
+    --background: #FFF6DA
+    --background-light: #DFD7C0
+    --color: #4A4229
+    --color-dim: #746E5C
+    --acc: #FFBF00
+    
+* 
+    box-sizing: border-box
+    padding: 0
+    margin: 0
+
+html,
+body 
+    max-width: 100vw
+    overflow-x: hidden
+    height: 100%
+
+a 
+    color: inherit
+    text-decoration: none
+
+@font-face 
+    font-family: "Hammersmith"
+    src: url('./fonts/Hammersmith.ttf')    
+
+@font-face 
+    font-family: "Khula"
+    src: url('./fonts/Khula-Regular.ttf')    
+
+@media (prefers-color-scheme: dark) 
+    html 
+        color-scheme: dark
+    
+body
+    font-family: Khula
+    background-color: var(--background)
+    color: var(--color)
+
+#__next
+    height: 100%
+    display: flex
+    flex-direction: column
+
