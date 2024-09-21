@@ -32,6 +32,7 @@ export default function Home() {
                 <title>Hastebucket</title>
             </Head>
             <main className={styles.container}>
+                {/* <input type="text" /> */}
                 <Table />
             </main>
         </>

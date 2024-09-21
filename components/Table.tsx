@@ -78,10 +78,9 @@ const Table = () => {
                             createdAt: new Date(),
                             id: bucketid,
                             type: shareMode === "file" ? "file_upload" : "text_share",
-                            filename: selectedFile?.name || null,
-                            size: selectedFile?.size || null,
-                            fileDownloadURL: downloadURL || null,
-                            text: textInput || "",
+                            filename: selectedFile.name,
+                            size: selectedFile.size,
+                            fileDownloadURL: downloadURL,
                             ownerToken, // Save the owner token in Firestore
                         });
 
@@ -91,6 +90,13 @@ const Table = () => {
                 }
             );
         } else {
+            await setDoc(doc(db, `buckets/${bucketid}`), {
+                createdAt: new Date(),
+                id: bucketid,
+                type: shareMode === "file" ? "file_upload" : "text_share",
+                text: textInput || "",
+                ownerToken, // Save the owner token in Firestore
+            });
             // If text, directly redirect to bucket management page
             router.push(`/bucket/${bucketid}`);
         }
@@ -98,27 +104,23 @@ const Table = () => {
 
     return (
         <div className={styles.container}>
-            <div className={styles.toggleContainer}>
-                <label>
-                    <input
-                        type="radio"
-                        name="shareMode"
-                        value="file"
-                        checked={shareMode === "file"}
-                        onChange={() => setShareMode("file")}
-                    />
-                    File Sharing
-                </label>
-                <label>
-                    <input
-                        type="radio"
-                        name="shareMode"
-                        value="text"
-                        checked={shareMode === "text"}
-                        onChange={() => setShareMode("text")}
-                    />
-                    Text Sharing
-                </label>
+            <div
+                className={`${styles.toggleContainer} ${
+                    shareMode == "file" ? styles.left : styles.right
+                }`}
+            >
+                <span
+                    className={shareMode == "file" ? styles.active : ""}
+                    onClick={() => setShareMode("file")}
+                >
+                    <h3>File</h3>
+                </span>
+                <span
+                    className={shareMode == "text" ? styles.active : ""}
+                    onClick={() => setShareMode("text")}
+                >
+                    <h3>Text</h3>
+                </span>
             </div>
 
             {shareMode === "file" && (
@@ -143,21 +145,24 @@ const Table = () => {
                 />
             )}
 
-            {selectedFile && shareMode === "file" && (
-                <p>Selected file: {selectedFile.name}</p>
-            )}
+            <div>
+                {selectedFile && shareMode === "file" && (
+                    <p>Selected file: {selectedFile.name}</p>
+                )}
 
-            {uploadProgress !== null && (
-                <div className={styles.progress}>
-                    Upload progress: {uploadProgress.toFixed(2)}%
-                </div>
-            )}
+                {uploadProgress !== null && (
+                    <div className={styles.progress}>
+                        Upload progress: {uploadProgress.toFixed(2)}%
+                    </div>
+                )}
+            </div>
 
             <button
+                className={styles.createBucket}
                 onClick={handleUpload}
                 disabled={shareMode === "file" ? !selectedFile : !textInput.trim()}
             >
-                Create Bucket
+                <p>Create Bucket</p>
             </button>
         </div>
     );
