@@ -4,6 +4,7 @@ import { storage, db } from "@/firebase";
 import styles from "@/styles/Table.module.sass";
 import createUniqueBucketId from "@/functions/generateBucketId";
 import { doc, setDoc } from "firebase/firestore";
+import { v4 as uuidv4 } from "uuid"; // To generate a unique token
 
 const Table = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -41,18 +42,26 @@ const Table = () => {
     };
 
     const handleUpload = async () => {
+        if (!selectedFile && shareMode === "file") return;
+
         const bucketid = await createUniqueBucketId();
+        const ownerToken = uuidv4(); // Generate a unique owner token
 
+        // Store the token in Firestore
+        await setDoc(doc(db, `buckets/${bucketid}`), {
+            createdAt: new Date(),
+            id: bucketid,
+            type: shareMode === "file" ? "file_upload" : "text_share",
+            size: selectedFile?.size || 0,
+            text: textInput || "",
+            ownerToken, // Save the owner token in Firestore
+        });
+
+        // Store the token in localStorage
+        localStorage.setItem(`bucket_${bucketid}_token`, ownerToken);
+
+        // Proceed with file upload if in file mode
         if (shareMode === "file" && selectedFile) {
-            // Handle file upload
-            await setDoc(doc(db, `buckets/${bucketid}`), {
-                createdAt: new Date(),
-                id: bucketid,
-                type: "file_upload",
-                size: selectedFile.size || 0,
-                text: "",
-            });
-
             const storageRef = ref(storage, `buckets/${bucketid}/${selectedFile.name}`);
             const uploadTask = uploadBytesResumable(storageRef, selectedFile);
 
@@ -71,20 +80,15 @@ const Table = () => {
                         console.log("File available at", downloadURL);
                         setUploadProgress(null);
                         setSelectedFile(null); // Clear the file after upload
+
+                        // Redirect to the bucket management page
+                        window.location.href = `/bucket/${bucketid}`;
                     });
                 }
             );
-        } else if (shareMode === "text" && textInput.trim()) {
-            // Handle text sharing
-            await setDoc(doc(db, `buckets/${bucketid}`), {
-                createdAt: new Date(),
-                id: bucketid,
-                type: "text_share",
-                text: textInput,
-            });
-
-            console.log("Text shared successfully!");
-            setTextInput(""); // Clear text after submission
+        } else {
+            // If text, directly redirect to bucket management page
+            window.location.href = `/bucket/${bucketid}`;
         }
     };
 
