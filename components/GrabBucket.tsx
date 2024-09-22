@@ -41,7 +41,7 @@ const GrabBucket = () => {
                     placeholder="Enter Bucket ID"
                     maxLength={5}
                 />
-                <input disabled={!bucketId} type="submit" value="GRAB" />
+                <input disabled={!bucketId.trim()} type="submit" value="GRAB" />
             </form>
         </section>
     );

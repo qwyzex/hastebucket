@@ -15,6 +15,7 @@ const Table = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [shareMode, setShareMode] = useState<"file" | "text">("file"); // Toggle between file and text
     const [textInput, setTextInput] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
 
     const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -46,6 +47,7 @@ const Table = () => {
 
     const handleUpload = async () => {
         if (!selectedFile && shareMode === "file") return;
+        setLoading(true);
 
         const bucketid = await createUniqueBucketId();
         const ownerToken = uuidv4(); // Generate a unique owner token
@@ -86,6 +88,7 @@ const Table = () => {
 
                         // Redirect to the bucket management page
                         router.push(`/bucket/${bucketid}`);
+                        setLoading(false);
                     });
                 }
             );
@@ -99,6 +102,7 @@ const Table = () => {
             });
             // If text, directly redirect to bucket management page
             router.push(`/bucket/${bucketid}`);
+            setLoading(false);
         }
     };
 
@@ -108,17 +112,17 @@ const Table = () => {
             <div
                 className={`${styles.toggleContainer} ${
                     shareMode == "file" ? styles.left : styles.right
-                }`}
+                } ${loading ? styles.disabled : ""}`}
             >
                 <span
                     className={shareMode == "file" ? styles.active : ""}
-                    onClick={() => setShareMode("file")}
+                    onClick={() => !loading && setShareMode("file")}
                 >
                     <h3>File</h3>
                 </span>
                 <span
                     className={shareMode == "text" ? styles.active : ""}
-                    onClick={() => setShareMode("text")}
+                    onClick={() => !loading && setShareMode("text")}
                 >
                     <h3>Text</h3>
                 </span>
@@ -133,7 +137,7 @@ const Table = () => {
                     onDrop={handleDrop}
                 >
                     <p>Drag & Drop your files here or click to select</p>
-                    <input type="file" onChange={handleFileChange} />
+                    <input type="file" onChange={handleFileChange} disabled={loading} />
                 </div>
             )}
 
@@ -161,9 +165,15 @@ const Table = () => {
             <button
                 className={styles.createBucket}
                 onClick={handleUpload}
-                disabled={shareMode === "file" ? !selectedFile : !textInput.trim()}
+                disabled={
+                    loading
+                        ? true
+                        : shareMode === "file"
+                        ? !selectedFile
+                        : !textInput.trim()
+                }
             >
-                <p>Create Bucket</p>
+                <p>{loading ? "LOADING" : "CHILL"} Create Bucket</p>
             </button>
         </div>
     );
