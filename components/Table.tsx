@@ -104,6 +104,7 @@ const Table = () => {
 
     return (
         <div className={styles.container}>
+            <p>Create a new bucket</p>
             <div
                 className={`${styles.toggleContainer} ${
                     shareMode == "file" ? styles.left : styles.right

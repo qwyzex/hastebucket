@@ -1,0 +1,25 @@
+@import './Vars'
+    
+.container
+    display: flex
+    flex-direction: column
+    gap: 0.6rem
+
+    max-width: 20rem
+
+    p
+        font-size: 1rem
+        color: var(--color-dim)
+        text-align: center
+
+    form
+        display: flex
+        justify-content: center
+        align-items: center
+        gap: 0.5rem
+
+        input[type="submit"]
+            @include button-primary()
+
+        input[type="text"]
+            @include input-field()

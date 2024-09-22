@@ -7,6 +7,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/firebase";
 import Header from "@/components/Header";
 import Table from "@/components/Table";
+import GrabBucket from "@/components/GrabBucket";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
@@ -32,7 +33,7 @@ export default function Home() {
                 <title>Hastebucket</title>
             </Head>
             <main className={styles.container}>
-                {/* <input type="text" /> */}
+                <GrabBucket />
                 <Table />
             </main>
         </>

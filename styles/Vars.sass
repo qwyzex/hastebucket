@@ -1,0 +1,46 @@
+@mixin button-primary()
+    // width: 100%
+    padding: 0.5rem 1rem
+    background-color: var(--acc)
+    
+    color: #ffffff
+    display: flex
+    justify-content: center
+    align-items: center
+    border: 2px solid #00000000
+    border-radius: 6px
+    cursor: pointer
+    box-shadow: 0 0.2rem 0.3rem #20202020
+    transition: all .3s ease
+
+    &:disabled
+        cursor: not-allowed
+        filter: saturate(10%)
+    
+    &:hover
+        // filter: brightness(108%)
+        border-radius: 0
+        border: 2px solid var(--color)
+        transform: translateY(-3px)
+    
+    &:active
+        transform: translateY(1px)
+
+@mixin input-field()
+    padding: 7px 10px
+
+    background-color: var(--color-dim)
+    color: var(--background)
+
+    border: none
+    outline: 2px solid #00000000
+    border-radius: 4px
+
+    transition: all 0.3s ease
+
+    &::placeholder
+        color: var(--color-invert)
+
+    &:focus-visible
+        outline: 2px solid var(--color)
+        
