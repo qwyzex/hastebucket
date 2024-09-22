@@ -4,6 +4,7 @@ import { ref, deleteObject, getBlob } from "firebase/storage";
 import { db, storage } from "@/firebase";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import styles from "@/styles/BucketPage.module.sass";
 
 const BucketPage = () => {
     const router = useRouter();
@@ -90,32 +91,65 @@ const BucketPage = () => {
             <Head>
                 <title>{bucketid} - Hastebucket</title>
             </Head>
-            <div>
-                <h1>Bucket Management ({bucketid})</h1>
-                {bucketData.type == "file_upload" ? (
-                    <>
-                        {bucketData?.filename && (
-                            <div>
-                                <p>File: {bucketData.filename}</p>
-                                <button onClick={handleDownloadFile}>
-                                    Download File
+            <main className={styles.container}>
+                <section>
+                    <h1>Bucket ({bucketid})</h1>
+                    <div>
+                        <p>
+                            Date Created :{" "}
+                            {bucketData.createdAt.toDate().toLocaleString()}
+                        </p>
+                        {bucketData.type == "file_upload" && (
+                            <p>
+                                File Size :{" "}
+                                {bucketData.size > 1000
+                                    ? bucketData.size / 1024 + "MB"
+                                    : bucketData.size + "KB"}
+                            </p>
+                        )}
+                    </div>
+                    <hr />
+                    <div className={styles.contentFrame}>
+                        <p>Content :</p>
+                        {bucketData.type == "file_upload" ? (
+                            <div className={styles.contentTable}>
+                                {bucketData?.filename && (
+                                    <>
+                                        <a href={bucketData.fileDownloadURL}>
+                                            {bucketData.filename}
+                                        </a>
+                                        <button onClick={handleDownloadFile}>
+                                            Download File
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        ) : (
+                            <div className={styles.contentTable}>
+                                <p>{bucketData.text}</p>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(bucketData.text);
+                                    }}
+                                >
+                                    Copy Text
                                 </button>
                             </div>
                         )}
-                    </>
-                ) : (
-                    bucketData.text
-                )}
-
-                {isOwner ? (
-                    <div>
-                        <p>You are the owner of this bucket.</p>
-                        <button onClick={handleDeleteBucket}>Delete Bucket</button>
                     </div>
-                ) : (
-                    <p>You do not have permission to manage this bucket.</p>
-                )}
-            </div>
+
+                    {isOwner ? (
+                        <div>
+                            <p>You are the owner of this bucket.</p>
+                            <button className={"btn-dgr"} onClick={handleDeleteBucket}>
+                                Delete Bucket
+                            </button>
+                        </div>
+                    ) : (
+                        <p>You do not have permission to manage this bucket.</p>
+                    )}
+                </section>
+            </main>
         </>
     );
 };

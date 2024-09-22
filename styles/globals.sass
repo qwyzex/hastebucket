@@ -6,6 +6,7 @@
     --color-invert: #ddd9cc
     --acc: #FFBF00
     --acc-dim: #e8c761
+    --color-link: #b49851
     
 * 
     box-sizing: border-box
@@ -19,8 +20,12 @@ body
     height: 100%
 
 a 
-    color: inherit
-    text-decoration: none
+    color: var(--acc) !important
+    text-decoration: underline #00000000 1.5px
+    transition: all 0.3s ease
+
+    &:hover
+        text-decoration: underline var(--acc) 1.5px
 
 @font-face 
     font-family: "Hammersmith"
@@ -41,6 +46,9 @@ body
 
 button, a, input
     font-family: Hammersmith !important
+
+    &.btn-dgr
+        background-color: #e7595e !important
 
 #__next
     height: 100%
