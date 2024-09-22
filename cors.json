@@ -1,6 +1,6 @@
 [
     {
-        "origin": ["http://localhost:3000", "http://hastebucket.vercel.app", "*"],
+        "origin": ["http://localhost:3000", "https://hastebucket.vercel.app", "*"],
         "method": ["GET", "POST", "PUT"],
         "maxAgeSeconds": 3600,
         "responseHeader": ["Content-Type"]

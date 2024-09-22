@@ -1,11 +1,14 @@
 import { db } from "@/firebase";
 import styles from "@/styles/GrabBucket.module.sass";
+import { Box, Modal } from "@mui/material";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
+import { useSnackbar } from "notistack";
 import { useState } from "react";
 
 const GrabBucket = () => {
     const router = useRouter();
+    const { enqueueSnackbar } = useSnackbar();
 
     const [bucketId, setBucketId] = useState<string>("");
 
@@ -24,7 +27,12 @@ const GrabBucket = () => {
         if (docSnap.exists()) {
             router.push(`/bucket/${bucketId}`);
         } else {
-            alert("Bucket not found!");
+            enqueueSnackbar(
+                bucketId.length == 5 ? "Bucket did not exists!" : "Invalid bucket ID!",
+                {
+                    variant: "error",
+                }
+            );
             setBucketId("");
             return;
         }

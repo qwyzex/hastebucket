@@ -36,3 +36,19 @@
                 p
                     max-height: 10rem
                     overflow: auto
+
+.deleteButton
+    @include button-primary()        
+    transition: all 0.3s ease !important
+
+.modalBox
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: flex-start
+    gap: 1rem
+
+    > div
+        display: flex
+        gap: 1rem
+

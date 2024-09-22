@@ -6,6 +6,7 @@
     --color-invert: #ddd9cc
     --acc: #FFBF00
     --acc-dim: #e8c761
+    --acc-dark: #745f1e
     --color-link: #b49851
     
 * 
@@ -50,8 +51,51 @@ button, a, input
     &.btn-dgr
         background-color: #e7595e !important
 
+        &:hover
+            border: 2px solid #a54649 !important
+
 #__next
     height: 100%
     display: flex
     flex-direction: column
 
+.fadeIn
+    animation: fadeInAnimation 0.3s ease-in-out
+
+@keyframes fadeInAnimation
+    0%
+        opacity: 0
+    100%
+        opacity: 1
+
+.loadingContainer 
+    --uib-size: 37px
+    --uib-color: var(--acc)
+    --uib-speed: .9s
+    --uib-bg-opacity: .1
+    height: var(--uib-size)
+    width: var(--uib-size)
+    transform-origin: center
+    overflow: visible
+
+    .car 
+        fill: none
+        stroke: var(--uib-color)
+        stroke-dasharray: 15, 85
+        stroke-dashoffset: 0
+        stroke-linecap: round
+        animation: loadingTravelAnimation var(--uib-speed) linear infinite
+        will-change: stroke-dasharray, stroke-dashoffset
+        transition: stroke 0.5s ease
+
+    .track 
+        stroke: var(--uib-color)
+        opacity: var(--uib-bg-opacity)
+        transition: stroke 0.5s ease
+
+@keyframes loadingTravelAnimation 
+    0% 
+        stroke-dashoffset: 0
+
+    100% 
+        stroke-dashoffset: 100

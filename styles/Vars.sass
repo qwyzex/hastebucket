@@ -1,13 +1,13 @@
 @mixin button-primary()
     // width: 100%
     padding: 0.5rem 1rem
-    background-color: var(--acc)
+    background-color: var(--acc) !important
     
-    color: #ffffff
+    color: #ffffff !important
     display: flex
     justify-content: center
     align-items: center
-    border: 2px solid #00000000
+    border: 2px solid #00000000 !important
     border-radius: 4px
     cursor: pointer
     box-shadow: 0 0.2rem 0.3rem #20202020
@@ -20,7 +20,7 @@
     &:hover
         // filter: brightness(108%)
         border-radius: 0
-        border: 2px solid var(--color)
+        border: 2px solid var(--color-link) !important
         transform: translateY(-3px)
     
     &:active

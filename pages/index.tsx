@@ -11,22 +11,6 @@ import GrabBucket from "@/components/GrabBucket";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-    const [usr, setUsr] = useState();
-
-    useEffect(() => {
-        const checkUsr = async () => {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    console.log("USER EXIST");
-                } else {
-                    console.log("USER NULL");
-                }
-            });
-        };
-
-        checkUsr();
-    });
-
     return (
         <>
             <Head>

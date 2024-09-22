@@ -173,7 +173,7 @@ const Table = () => {
                         : !textInput.trim()
                 }
             >
-                <p>{loading ? "LOADING" : "CHILL"} Create Bucket</p>
+                <p>Create Bucket</p>
             </button>
         </div>
     );

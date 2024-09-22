@@ -1,9 +1,35 @@
 import Header from "@/components/Header";
 import "@/styles/globals.sass";
+import { createTheme, ThemeProvider, useMediaQuery } from "@mui/material";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 
+import { SnackbarProvider } from "notistack";
+import { useMemo } from "react";
+
 export default function App({ Component, pageProps }: AppProps) {
+    const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+
+    const theme = useMemo(
+        () =>
+            createTheme({
+                palette: {
+                    mode: prefersDarkMode ? "dark" : "light",
+                    primary: {
+                        light: "#FFBF00",
+                        main: "#e8c761",
+                        dark: "#745f1e",
+                    },
+                    secondary: {
+                        light: "#FFBF00",
+                        main: "#e8c761",
+                        dark: "#745f1e",
+                    },
+                },
+            }),
+        [prefersDarkMode]
+    );
+
     return (
         <>
             <Head>
@@ -12,7 +38,11 @@ export default function App({ Component, pageProps }: AppProps) {
                 <link rel="icon" href="/icon.png" />
             </Head>
             <Header />
-            <Component {...pageProps} />
+            <ThemeProvider theme={theme}>
+                <SnackbarProvider maxSnack={3}>
+                    <Component {...pageProps} />
+                </SnackbarProvider>
+            </ThemeProvider>
         </>
     );
 }
