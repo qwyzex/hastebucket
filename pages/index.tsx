@@ -8,6 +8,7 @@ import { auth } from "@/firebase";
 import Header from "@/components/Header";
 import Table from "@/components/Table";
 import GrabBucket from "@/components/GrabBucket";
+import Footer from "@/components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
                 <GrabBucket />
                 <Table />
             </main>
+            <Footer />
         </>
     );
 }

@@ -12,7 +12,7 @@ const Header = () => {
     return (
         <header className={styles.container}>
             <div onClick={handleReturnHome}>
-                <HBIcon />
+                <HBIcon className={styles.icon} />
             </div>
             <h1 onClick={handleReturnHome}>HASTEBUCKET</h1>
         </header>

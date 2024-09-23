@@ -1,7 +1,8 @@
-const HBIcon = () => {
+const HBIcon = (className: any) => {
     return (
         <>
             <svg
+                className={className}
                 width="65"
                 height="65"
                 viewBox="0 0 301 301"

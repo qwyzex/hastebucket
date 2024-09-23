@@ -1,0 +1,55 @@
+@import Vars
+    
+.container
+    display: flex
+    flex-direction: row
+    justify-content: center
+    align-items: center
+
+    padding-bottom: 10px
+
+.helpButton
+    position: absolute
+    bottom: 20px
+    right: 20px 
+
+    button
+        background-color: var(--color-dim)
+        box-shadow: 0 5px 10px #20202060
+        transition: all 0.3s ease
+
+        &:hover
+            background-color: var(--acc)
+
+.modalBox
+    article
+        display: flex
+        flex-direction: column
+        gap: 0.6rem
+        
+        > header
+            display: flex
+            justify-content: space-between
+            align-items: center
+
+            button
+                background-color: var(--background-light)
+
+                &:hover
+                    background-color: var(--background-light)
+                
+                svg
+                    color: var(--color)
+
+        > div
+            display: flex
+            flex-direction: column
+            gap: 0.3rem
+
+            p
+                a
+                    display: flex
+                    align-items: center
+                    align-content: center
+                    gap: 0.5rem
+
