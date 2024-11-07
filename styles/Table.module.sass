@@ -9,6 +9,16 @@
     > p
         color: var(--color-dim)
 
+    .progressContainer
+        display: flex
+        flex-direction: column
+        gap: 0.4rem
+
+        width: 100%
+
+        input
+            @include input-field()
+
     .toggleContainer 
         display: flex
         flex-direction: row

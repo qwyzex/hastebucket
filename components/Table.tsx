@@ -1,11 +1,11 @@
-import { useState, DragEvent, ChangeEvent } from "react";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage, db } from "@/firebase";
+import {useState, DragEvent, ChangeEvent} from "react";
+import {getStorage, ref, uploadBytesResumable, getDownloadURL} from "firebase/storage";
+import {storage, db} from "@/firebase";
 import styles from "@/styles/Table.module.sass";
 import createUniqueBucketId from "@/functions/generateBucketId";
-import { doc, setDoc } from "firebase/firestore";
-import { v4 as uuidv4 } from "uuid"; // To generate a unique token
-import { useRouter } from "next/router";
+import {doc, setDoc} from "firebase/firestore";
+import {v4 as uuidv4} from "uuid"; // To generate a unique token
+import {useRouter} from "next/router";
 
 const Table = () => {
     const router = useRouter();
@@ -137,7 +137,7 @@ const Table = () => {
                     onDrop={handleDrop}
                 >
                     <p>Drag & Drop your files here or click to select</p>
-                    <input type="file" onChange={handleFileChange} disabled={loading} />
+                    <input type="file" onChange={handleFileChange} disabled={loading}/>
                 </div>
             )}
 
@@ -150,9 +150,12 @@ const Table = () => {
                 />
             )}
 
-            <div>
+            <div className={styles.progressContainer}>
                 {selectedFile && shareMode === "file" && (
-                    <p>Selected file: {selectedFile.name}</p>
+                    <>
+                        <p>Selected File:</p>
+                        <input type="text" readOnly value={selectedFile.name}/>
+                    </>
                 )}
 
                 {uploadProgress !== null && (
@@ -169,8 +172,8 @@ const Table = () => {
                     loading
                         ? true
                         : shareMode === "file"
-                        ? !selectedFile
-                        : !textInput.trim()
+                            ? !selectedFile
+                            : !textInput.trim()
                 }
             >
                 <p>Create Bucket</p>

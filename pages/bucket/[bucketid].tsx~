@@ -8,7 +8,7 @@ import styles from "@/styles/BucketPage.module.sass";
 import { Box, Button, Modal, Snackbar, SnackbarCloseReason } from "@mui/material";
 import { useSnackbar } from "notistack";
 import Loading from "@/components/Loading";
-import {Launch, Shortcut} from "@mui/icons-material";
+import {Shortcut} from "@mui/icons-material";
 
 const BucketPage = () => {
     const router = useRouter();
@@ -115,7 +115,7 @@ const BucketPage = () => {
                                                     <div>
 
                                                     <a href={bucketData.fileDownloadURL}>
-                                                        <Launch />
+                                                        <Shortcut />
                                                     </a>
                                                         <input type={"text"} readOnly value={bucketData.filename} />
                                                     </div>

@@ -33,6 +33,17 @@
                 flex-direction: column
                 gap: 0.6rem
 
+                div
+                    display: flex
+                    gap: 0.3rem
+
+                    a
+                        @include button-secondary()
+
+                    input
+                        width: 100%
+                        @include input-field()
+
                 p
                     max-height: 10rem
                     overflow: auto

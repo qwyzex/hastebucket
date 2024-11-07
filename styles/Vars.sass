@@ -26,6 +26,35 @@
     &:active
         transform: translateY(1px)
 
+@mixin button-secondary()
+
+    padding: 0.4rem
+    background-color: var(--background) !important
+
+    color: var(--color) !important
+    display: flex
+    justify-content: center
+    align-items: center
+    border: 2px solid #00000000 !important
+    border-radius: 4px
+    cursor: pointer
+    box-shadow: 0 0.2rem 0.3rem #20202000
+    transition: all .3s ease
+
+    &:disabled
+        cursor: not-allowed
+        filter: saturate(10%)
+
+    &:hover
+        // filter: brightness(108%)
+        border-radius: 0
+        box-shadow: 0 0.2rem 0.3rem #20202020
+        border: 2px solid var(--color-dim) !important
+        transform: translateY(-3px)
+
+    &:active
+        transform: translateY(1px)
+
 @mixin input-field()
     padding: 7px 10px
 
