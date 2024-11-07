@@ -1,40 +1,60 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🪣 HasteBucket
 
-## Getting Started
+**HasteBucket** is a fast and secure way to share files and text snippets between devices without requiring user accounts or logins. Ideal for quick, temporary sharing, HasteBucket generates a unique "bucket" for each upload that can be shared easily with others.
 
-First, run the development server:
+## 🗝️ Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **File Sharing**: Upload files quickly with a drag-and-drop interface. HasteBucket supports most file types for secure, one-time sharing.
+- **Text Sharing**: Share notes or text snippets directly, without needing other tools or accounts.
+- **Unique Buckets**: Each file or text snippet is stored in a unique bucket, with a shareable URL for easy access.
+- **Temporary Storage**: Buckets automatically expire after 24 hours, keeping your shared data safe and secure.
+- **No Sign-in Required**: Fully anonymous and accessible, requiring no account setup.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔗 Use Cases
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+- **Quick File Transfer**: Move files between devices without using messaging apps or emails.
+- **Simple Text Transfer**: Copy and send snippets of code, notes, or reminders instantly.
+- **Temporary Access Links**: Share temporary, single-use files or text without leaving traces or needing to manage permissions.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## ❓ How It Works
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+1. **Upload File or Text**: Drop your file or paste text directly on the HasteBucket page.
+2. **Generate a Bucket**: HasteBucket will generate a unique bucket ID and shareable link.
+3. **Share or Access**: Use the link to access the file or text on another device.
+4. **Automatic Expiration**: After 24 hours, the bucket is deleted, along with its contents.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## 📖 Getting Started
 
-## Learn More
+To use HasteBucket:
 
-To learn more about Next.js, take a look at the following resources:
+1. **Visit the Website**: [hastebucket.vercel.app](https://hastebucket.vercel.app)
+2. **Select Upload Type**: Choose whether you want to upload a file or share text.
+3. **Upload or Enter Text**:
+    - For files, drag and drop them into the upload area.
+    - For text, simply type or paste your content.
+4. **Share the Link**: Copy the link provided to share with others.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔒 Privacy and Security
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- **No User Data Required**: HasteBucket doesn’t require accounts or sign-ins.
+- **Automatic Deletion**: Buckets are automatically deleted after 24 hours.
+- **Temporary URLs**: The unique bucket links are generated for each session and do not remain accessible beyond their expiration.
 
-## Deploy on Vercel
+## 🙋 FAQs
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Is my data secure?
+Yes, each bucket is unique and has a temporary link. Buckets expire after 24 hours to ensure security and privacy.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Can I delete my bucket manually?
+Yes, after uploading, you have the option to delete the bucket if you no longer need it.
+
+### Are there file size limits?
+HasteBucket supports small to medium-sized files. If your file is too large, please consider compressing it or using another method.
+
+## 🚀 Future Improvements
+
+We’re actively working on improvements to make HasteBucket even more reliable and versatile, including options to extend bucket expiration times and support for larger files.
+
+---
+
+HasteBucket is the simplest, most efficient way to share files and text across devices without the hassle. Try it today at [hastebucket.vercel.app](https://hastebucket.vercel.app)!
