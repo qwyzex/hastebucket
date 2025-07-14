@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject, getBlob } from "firebase/storage";
 import { db, storage } from "@/firebase";
@@ -10,7 +10,20 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useSnackbar } from "notistack";
 import Loading from "@/components/Loading";
-import { FileDownload, Launch, Shortcut } from "@mui/icons-material";
+import {
+    CopyAll,
+    FileDownload,
+    FolderShared,
+    IosShare,
+    Launch,
+    QrCode,
+    QrCode2,
+    Share,
+    ShareRounded,
+    Shortcut,
+} from "@mui/icons-material";
+
+import { QRCodeCanvas } from "qrcode.react";
 
 const BucketPage = () => {
     const router = useRouter();
@@ -20,6 +33,8 @@ const BucketPage = () => {
     const [isOwner, setIsOwner] = useState(false);
     const [bucketExists, setBucketExists] = useState<boolean | null>(null);
     const [bucketData, setBucketData] = useState<any>(null);
+
+    const [openQR, setOpenQR] = useState(false);
 
     useEffect(() => {
         const checkBucketExists = async () => {
@@ -110,6 +125,38 @@ const BucketPage = () => {
     const handleOpenDeleteBucketModal = () => setOpenDeleteBucketModal(true);
     const handleCloseDeleteBucketModal = () => setOpenDeleteBucketModal(false);
 
+    // SHARE OPTIONS LOGIC
+    const handleNativeShare = async () => {
+        if (!navigator.share) {
+            enqueueSnackbar("Sharing not supported on this device.", {
+                variant: "warning",
+            });
+            return;
+        }
+
+        try {
+            await navigator.share({
+                title: "Check out this bucket on Hastebucket",
+                url: window.location.href,
+            });
+        } catch (err) {
+            console.error("Share failed:", err);
+        }
+    };
+
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            enqueueSnackbar("Bucket link copied to clipboard!", { variant: "success" });
+        } catch (err) {
+            console.error("Failed to copy:", err);
+            enqueueSnackbar("Failed to copy link", { variant: "error" });
+        }
+    };
+
+    const handleShowQR = () => setOpenQR(true);
+    const handleCloseQR = () => setOpenQR(false);
+
     return (
         <>
             <Head>
@@ -127,6 +174,27 @@ const BucketPage = () => {
                         <>
                             <section className="fadeIn">
                                 <h1>Bucket ({bucketid})</h1>
+                                <div className={styles.shareOptions}>
+                                    <button
+                                        className={styles.shareButton}
+                                        onClick={handleNativeShare}
+                                    >
+                                        <ShareRounded />
+                                        <h4>SHARE</h4>
+                                    </button>
+                                    <button
+                                        className={styles.shareButton}
+                                        onClick={handleCopyLink}
+                                    >
+                                        <CopyAll />
+                                        <h4>COPY URL</h4>
+                                    </button>
+                                    <QRCode
+                                        open={openQR}
+                                        handleOpen={handleShowQR}
+                                        handleClose={handleCloseQR}
+                                    />
+                                </div>
                                 <div>
                                     <p>
                                         Date Created :{" "}
@@ -258,6 +326,8 @@ const BucketPage = () => {
     );
 };
 
+export default BucketPage;
+
 const DeleteConfirmation = ({
     open,
     handleOpen,
@@ -268,6 +338,14 @@ const DeleteConfirmation = ({
 }: any) => {
     const router = useRouter();
     const { enqueueSnackbar } = useSnackbar();
+
+    const yesButtonRef = useRef<HTMLButtonElement | null>(null);
+
+    useEffect(() => {
+        if (open && yesButtonRef.current) {
+            yesButtonRef.current.focus();
+        }
+    }, [open]);
 
     const style = {
         position: "absolute" as "absolute",
@@ -321,6 +399,8 @@ const DeleteConfirmation = ({
                     </p>
                     <div>
                         <Button
+                            autoFocus
+                            ref={yesButtonRef}
                             className={`${styles.deleteButton} btn-dgr`}
                             onClick={handleDeleteBucket}
                         >
@@ -336,4 +416,39 @@ const DeleteConfirmation = ({
     );
 };
 
-export default BucketPage;
+const QRCode = ({ open, handleOpen, handleClose }: any) => {
+    return (
+        <>
+            <button className={styles.shareButton} onClick={handleOpen}>
+                <QrCode />
+                <h4>QR Code</h4>
+            </button>
+            <Modal open={open} onClose={handleClose}>
+                <Box
+                    className={`${styles.modalBox} ${styles.QRModal}`}
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        bgcolor: "var(--background)",
+                        border: "3px solid var(--acc)",
+                        borderRadius: 2,
+                        boxShadow: 12,
+                        p: 4,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        textAlign: "center",
+                    }}
+                >
+                    <h4>Scan this QR code to access the bucket:</h4>
+                    <QRCodeCanvas value={window.location.href} size={200} />
+                    <Button className={styles.shareButton} onClick={handleClose}>
+                        Close
+                    </Button>
+                </Box>
+            </Modal>
+        </>
+    );
+};

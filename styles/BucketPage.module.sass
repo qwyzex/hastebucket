@@ -1,5 +1,8 @@
 @import Vars
 
+.shareButton
+    @include button-secondary()
+
 .container
     // background-color: red
 
@@ -21,6 +24,21 @@
 
         button
             @include button-primary()
+
+        .shareOptions
+            display: flex
+            flex-direction: row
+            gap: 1rem
+
+            .shareButton
+                @include button-secondary()
+
+                justify-content: start
+                width: max-content
+
+                h4
+                    margin-left: 10px
+                    margin-top: 2px
 
         .contentFrame
             .contentTable
@@ -59,7 +77,12 @@
     align-items: flex-start
     gap: 1rem
 
+    max-width: 85vw
+
     > div
         display: flex
         gap: 1rem
 
+.QRModal
+    canvas
+        box-shadow: 0 5px 15px #20202070
