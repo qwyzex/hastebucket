@@ -314,7 +314,7 @@ const BucketPage = () => {
                                     </div>
                                 ) : (
                                     <p>
-                                        You do not have permission to manage this bucket.
+                                        You do not have the permission to manage this bucket.
                                     </p>
                                 )}
                             </section>
