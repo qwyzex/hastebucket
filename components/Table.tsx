@@ -39,81 +39,73 @@ const Table = () => {
 
     const handleUpload = async () => {
         if (shareMode === "file" && selectedFiles.length === 0) return;
-        if (shareMode === "text" && !textInput.trim()) return;
-
         setLoading(true);
-        const bucketId = await createUniqueBucketId();
-        const ownerToken = uuidv4();
-        localStorage.setItem(`bucket_${bucketId}_token`, ownerToken);
 
-        if (shareMode === "text") {
-            await setDoc(doc(db, `buckets/${bucketId}`), {
+        const bucketid = await createUniqueBucketId();
+        const ownerToken = uuidv4();
+        localStorage.setItem(`bucket_${bucketid}_token`, ownerToken);
+
+        if (shareMode === "file") {
+            const totalSize = selectedFiles.reduce((acc, f) => acc + f.size, 0);
+            const lastTransferred: Record<string, number> = {};
+            let totalTransferred = 0;
+
+            const fileMetadata: { name: string; size: number; downloadURL: string }[] =
+                [];
+
+            for (const file of selectedFiles) {
+                const fileRef = ref(storage, `buckets/${bucketid}/${file.name}`);
+                const uploadTask = uploadBytesResumable(fileRef, file);
+                lastTransferred[file.name] = 0;
+
+                await new Promise<void>((resolve, reject) => {
+                    uploadTask.on(
+                        "state_changed",
+                        (snapshot) => {
+                            const current = snapshot.bytesTransferred;
+                            const delta = current - lastTransferred[file.name];
+                            lastTransferred[file.name] = current;
+
+                            totalTransferred += delta;
+                            setUploadProgress((totalTransferred / totalSize) * 100);
+                        },
+                        (error) => reject(error),
+                        async () => {
+                            const downloadURL = await getDownloadURL(
+                                uploadTask.snapshot.ref
+                            );
+                            fileMetadata.push({
+                                name: file.name,
+                                size: file.size,
+                                downloadURL,
+                            });
+                            resolve();
+                        }
+                    );
+                });
+            }
+
+            await setDoc(doc(db, `buckets/${bucketid}`), {
                 createdAt: new Date(),
-                id: bucketId,
-                type: "text_share",
-                text: textInput.trim(),
+                id: bucketid,
+                type: "file_upload",
+                files: fileMetadata,
                 ownerToken,
             });
-            router.push(`/bucket/${bucketId}`);
-            return;
-        }
 
-        // Calculate total bytes across all files
-        const totalBytes = selectedFiles.reduce((acc, file) => acc + file.size, 0);
-        let totalBytesTransferred = 0;
-
-        const fileMetas: any[] = [];
-
-        for (const file of selectedFiles) {
-            const storageRef = ref(storage, `buckets/${bucketId}/${file.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, file);
-
-            await new Promise<void>((resolve, reject) => {
-                uploadTask.on(
-                    "state_changed",
-                    (snapshot) => {
-                        // New bytes uploaded for this chunk
-                        const currentTransferred = snapshot.bytesTransferred;
-                        const previousTransferred =
-                            (snapshot as any)._previousBytesTransferred || 0;
-
-                        // Update totalBytesTransferred
-                        totalBytesTransferred += currentTransferred - previousTransferred;
-                        (snapshot as any)._previousBytesTransferred = currentTransferred;
-
-                        const overallProgress =
-                            (totalBytesTransferred / totalBytes) * 100;
-                        setUploadProgress(overallProgress);
-                    },
-                    (error) => {
-                        console.error("Upload failed", file.name, error);
-                        reject(error);
-                    },
-                    async () => {
-                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        fileMetas.push({
-                            name: file.name,
-                            size: file.size,
-                            type: file.type,
-                            url: downloadURL,
-                        });
-                        resolve();
-                    }
-                );
+            router.push(`/bucket/${bucketid}`);
+            setLoading(false);
+        } else {
+            await setDoc(doc(db, `buckets/${bucketid}`), {
+                createdAt: new Date(),
+                id: bucketid,
+                type: "text_share",
+                text: textInput || "",
+                ownerToken,
             });
+            router.push(`/bucket/${bucketid}`);
+            setLoading(false);
         }
-
-        await setDoc(doc(db, `buckets/${bucketId}`), {
-            createdAt: new Date(),
-            id: bucketId,
-            type: "file_upload",
-            files: fileMetas,
-            ownerToken,
-        });
-
-        setSelectedFiles([]);
-        setUploadProgress(null);
-        router.push(`/bucket/${bucketId}`);
     };
 
     return (
@@ -172,7 +164,11 @@ const Table = () => {
                         <ul>
                             {selectedFiles.map((file, i) => (
                                 <li key={i}>
-                                    {file.name} ({Math.round(file.size / 1024)} KB)
+                                    (
+                                    {file.size / 1024 > 1000
+                                        ? (file.size / (1024 * 1024)).toFixed(1) + " MB"
+                                        : (file.size / 1024).toFixed(1) + " KB"}
+                                    ) {file.name}
                                 </li>
                             ))}
                         </ul>
