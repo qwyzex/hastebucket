@@ -1,19 +1,19 @@
-import {useState, DragEvent, ChangeEvent} from "react";
-import {getStorage, ref, uploadBytesResumable, getDownloadURL} from "firebase/storage";
-import {storage, db} from "@/firebase";
+import { useState, DragEvent, ChangeEvent } from "react";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage, db } from "@/firebase";
 import styles from "@/styles/Table.module.sass";
 import createUniqueBucketId from "@/functions/generateBucketId";
-import {doc, setDoc} from "firebase/firestore";
-import {v4 as uuidv4} from "uuid"; // To generate a unique token
-import {useRouter} from "next/router";
+import { doc, setDoc } from "firebase/firestore";
+import { v4 as uuidv4 } from "uuid";
+import { useRouter } from "next/router";
 
 const Table = () => {
     const router = useRouter();
 
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadProgress, setUploadProgress] = useState<number | null>(null);
     const [isDragging, setIsDragging] = useState(false);
-    const [shareMode, setShareMode] = useState<"file" | "text">("file"); // Toggle between file and text
+    const [shareMode, setShareMode] = useState<"file" | "text">("file");
     const [textInput, setTextInput] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -21,107 +21,117 @@ const Table = () => {
         e.preventDefault();
     };
 
-    const handleDragEnter = () => {
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = () => {
-        setIsDragging(false);
-    };
+    const handleDragEnter = () => setIsDragging(true);
+    const handleDragLeave = () => setIsDragging(false);
 
     const handleDrop = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setIsDragging(false);
-
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            setSelectedFile(files[0]);
-        }
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) setSelectedFiles(files);
     };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setSelectedFile(e.target.files[0]);
+            setSelectedFiles(Array.from(e.target.files));
         }
     };
 
     const handleUpload = async () => {
-        if (!selectedFile && shareMode === "file") return;
+        if (shareMode === "file" && selectedFiles.length === 0) return;
+        if (shareMode === "text" && !textInput.trim()) return;
+
         setLoading(true);
+        const bucketId = await createUniqueBucketId();
+        const ownerToken = uuidv4();
+        localStorage.setItem(`bucket_${bucketId}_token`, ownerToken);
 
-        const bucketid = await createUniqueBucketId();
-        const ownerToken = uuidv4(); // Generate a unique owner token
-
-        // Store the token in localStorage
-        localStorage.setItem(`bucket_${bucketid}_token`, ownerToken);
-
-        // Proceed with file upload if in file mode
-        if (shareMode === "file" && selectedFile) {
-            const storageRef = ref(storage, `buckets/${bucketid}/${selectedFile.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, selectedFile);
-
-            uploadTask.on(
-                "state_changed",
-                (snapshot) => {
-                    const progress =
-                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    setUploadProgress(progress);
-                },
-                (error) => {
-                    console.error("Upload failed", error);
-                },
-                () => {
-                    getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-                        console.log("File available at", downloadURL);
-                        setUploadProgress(null);
-                        setSelectedFile(null); // Clear the file after upload
-
-                        await setDoc(doc(db, `buckets/${bucketid}`), {
-                            createdAt: new Date(),
-                            id: bucketid,
-                            type: shareMode === "file" ? "file_upload" : "text_share",
-                            filename: selectedFile.name,
-                            size: selectedFile.size,
-                            fileDownloadURL: downloadURL,
-                            ownerToken, // Save the owner token in Firestore
-                        });
-
-                        // Redirect to the bucket management page
-                        router.push(`/bucket/${bucketid}`);
-                        setLoading(false);
-                    });
-                }
-            );
-        } else {
-            await setDoc(doc(db, `buckets/${bucketid}`), {
+        if (shareMode === "text") {
+            await setDoc(doc(db, `buckets/${bucketId}`), {
                 createdAt: new Date(),
-                id: bucketid,
-                type: shareMode === "file" ? "file_upload" : "text_share",
-                text: textInput || "",
-                ownerToken, // Save the owner token in Firestore
+                id: bucketId,
+                type: "text_share",
+                text: textInput.trim(),
+                ownerToken,
             });
-            // If text, directly redirect to bucket management page
-            router.push(`/bucket/${bucketid}`);
-            setLoading(false);
+            router.push(`/bucket/${bucketId}`);
+            return;
         }
+
+        // Calculate total bytes across all files
+        const totalBytes = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+        let totalBytesTransferred = 0;
+
+        const fileMetas: any[] = [];
+
+        for (const file of selectedFiles) {
+            const storageRef = ref(storage, `buckets/${bucketId}/${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            await new Promise<void>((resolve, reject) => {
+                uploadTask.on(
+                    "state_changed",
+                    (snapshot) => {
+                        // New bytes uploaded for this chunk
+                        const currentTransferred = snapshot.bytesTransferred;
+                        const previousTransferred =
+                            (snapshot as any)._previousBytesTransferred || 0;
+
+                        // Update totalBytesTransferred
+                        totalBytesTransferred += currentTransferred - previousTransferred;
+                        (snapshot as any)._previousBytesTransferred = currentTransferred;
+
+                        const overallProgress =
+                            (totalBytesTransferred / totalBytes) * 100;
+                        setUploadProgress(overallProgress);
+                    },
+                    (error) => {
+                        console.error("Upload failed", file.name, error);
+                        reject(error);
+                    },
+                    async () => {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        fileMetas.push({
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            url: downloadURL,
+                        });
+                        resolve();
+                    }
+                );
+            });
+        }
+
+        await setDoc(doc(db, `buckets/${bucketId}`), {
+            createdAt: new Date(),
+            id: bucketId,
+            type: "file_upload",
+            files: fileMetas,
+            ownerToken,
+        });
+
+        setSelectedFiles([]);
+        setUploadProgress(null);
+        router.push(`/bucket/${bucketId}`);
     };
 
     return (
         <div className={styles.container}>
             <p>Create a new bucket</p>
+
             <div
-                className={`${styles.toggleContainer} ${
-                    shareMode == "file" ? styles.left : styles.right
-                } ${loading ? styles.disabled : ""}`}
+                className={`${styles.toggleContainer} ${shareMode === "file" ? styles.left : styles.right
+                    } ${loading ? styles.disabled : ""}`}
             >
                 <span
-                    className={shareMode == "file" ? styles.active : ""}
+                    className={shareMode === "file" ? styles.active : ""}
                     onClick={() => !loading && setShareMode("file")}
                 >
                     <h3>File</h3>
                 </span>
                 <span
-                    className={shareMode == "text" ? styles.active : ""}
+                    className={shareMode === "text" ? styles.active : ""}
                     onClick={() => !loading && setShareMode("text")}
                 >
                     <h3>Text</h3>
@@ -136,8 +146,13 @@ const Table = () => {
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                 >
-                    <p>Drag & Drop your files here or click to select</p>
-                    <input type="file" onChange={handleFileChange} disabled={loading}/>
+                    <p>Drag & Drop files here or click to select</p>
+                    <input
+                        type="file"
+                        onChange={handleFileChange}
+                        multiple
+                        disabled={loading}
+                    />
                 </div>
             )}
 
@@ -151,10 +166,16 @@ const Table = () => {
             )}
 
             <div className={styles.progressContainer}>
-                {selectedFile && shareMode === "file" && (
+                {selectedFiles.length > 0 && shareMode === "file" && (
                     <>
-                        <p>Selected File:</p>
-                        <input type="text" readOnly value={selectedFile.name}/>
+                        <p>Selected Files:</p>
+                        <ul>
+                            {selectedFiles.map((file, i) => (
+                                <li key={i}>
+                                    {file.name} ({Math.round(file.size / 1024)} KB)
+                                </li>
+                            ))}
+                        </ul>
                     </>
                 )}
 
@@ -169,11 +190,9 @@ const Table = () => {
                 className={styles.createBucket}
                 onClick={handleUpload}
                 disabled={
-                    loading
-                        ? true
-                        : shareMode === "file"
-                            ? !selectedFile
-                            : !textInput.trim()
+                    loading ||
+                    (shareMode === "file" && selectedFiles.length === 0) ||
+                    (shareMode === "text" && !textInput.trim())
                 }
             >
                 <p>Create Bucket</p>
