@@ -6,9 +6,11 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import styles from "@/styles/BucketPage.module.sass";
 import { Box, Button, Modal, Snackbar, SnackbarCloseReason } from "@mui/material";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import { useSnackbar } from "notistack";
 import Loading from "@/components/Loading";
-import {Launch, Shortcut} from "@mui/icons-material";
+import { FileDownload, Launch, Shortcut } from "@mui/icons-material";
 
 const BucketPage = () => {
     const router = useRouter();
@@ -46,23 +48,59 @@ const BucketPage = () => {
         checkBucketExists();
     }, [bucketid]);
 
-    const handleDownloadFile = async () => {
-        const fileRef = ref(storage, `buckets/${bucketid}/${bucketData.filename}`);
-
+    const handleDownloadFile = async (file: any) => {
         try {
+            const fileRef = ref(storage, `buckets/${bucketid}/${file.name}`);
             const blob = await getBlob(fileRef);
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.setAttribute("download", bucketData.filename);
+            link.setAttribute("download", file.name);
             document.body.appendChild(link);
             link.click();
             link.remove();
-            window.URL.revokeObjectURL(url); // Clean up
+            window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error("Error fetching download URL:", error);
+            console.error("Error downloading file:", error);
         }
     };
+
+    const handleDownloadAllAsZip = async () => {
+        if (!bucketData?.files || !Array.isArray(bucketData.files)) return;
+
+        const zip = new JSZip();
+
+        try {
+            for (const file of bucketData.files) {
+                const fileRef = ref(storage, `buckets/${bucketid}/${file.name}`);
+                const blob = await getBlob(fileRef);
+                zip.file(file.name, blob); // Add each blob to the ZIP file
+            }
+
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            saveAs(zipBlob, `bucket-${bucketid}.zip`);
+        } catch (error) {
+            console.error("Failed to create zip:", error);
+        }
+    };
+
+    // const handleDownloadFile = async () => {
+    //     const fileRef = ref(storage, `buckets/${bucketid}/${bucketData.filename}`);
+
+    //     try {
+    //         const blob = await getBlob(fileRef);
+    //         const url = window.URL.createObjectURL(blob);
+    //         const link = document.createElement("a");
+    //         link.href = url;
+    //         link.setAttribute("download", bucketData.filename);
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         link.remove();
+    //         window.URL.revokeObjectURL(url); // Clean up
+    //     } catch (error) {
+    //         console.error("Error fetching download URL:", error);
+    //     }
+    // };
 
     const handleSuccessCopy = () => {
         enqueueSnackbar("Copied to clipboard!!", { variant: "success" });
@@ -96,12 +134,21 @@ const BucketPage = () => {
                                     </p>
                                     {bucketData.type == "file_upload" && (
                                         <p>
-                                            File Size :{" "}
-                                            {(bucketData.size / 1024 > 1000
-                                                ? bucketData.size / (1024 * 1024)
-                                                : bucketData.size / 1024
-                                            ).toFixed(2)}{" "}
-                                            {bucketData.size / 1024 > 1000 ? "MB" : "KB"}
+                                            Total File Size :{" "}
+                                            {(() => {
+                                                const totalSize =
+                                                    bucketData.files?.reduce(
+                                                        (acc: any, f: any) =>
+                                                            acc + f.size,
+                                                        0
+                                                    ) || 0;
+                                                return totalSize / 1024 > 1000
+                                                    ? (totalSize / (1024 * 1024)).toFixed(
+                                                        2
+                                                    ) + " MB"
+                                                    : (totalSize / 1024).toFixed(2) +
+                                                    " KB";
+                                            })()}
                                         </p>
                                     )}
                                 </div>
@@ -110,17 +157,60 @@ const BucketPage = () => {
                                     <p>Content :</p>
                                     {bucketData.type == "file_upload" ? (
                                         <div className={styles.contentTable}>
-                                            {bucketData?.filename && (
+                                            {bucketData.files?.map(
+                                                (file: any, idx: number) => (
+                                                    <>
+                                                        <div
+                                                            key={idx}
+                                                            className={styles.fileItem}
+                                                        >
+                                                            <a
+                                                                href={file.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                <Launch />
+                                                            </a>
+                                                            <input
+                                                                type="text"
+                                                                readOnly
+                                                                value={file.name}
+                                                            />
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleDownloadFile(
+                                                                        file
+                                                                    )
+                                                                }
+                                                            >
+                                                                <FileDownload />
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )
+                                            )}
+                                            {bucketData.files.length > 1 && (
                                                 <>
-                                                    <div>
-
-                                                    <a href={bucketData.fileDownloadURL}>
-                                                        <Launch />
-                                                    </a>
-                                                        <input type={"text"} readOnly value={bucketData.filename} />
-                                                    </div>
-                                                    <button onClick={handleDownloadFile}>
-                                                        Download File
+                                                    <button
+                                                        onClick={() =>
+                                                            bucketData.files?.forEach(
+                                                                (
+                                                                    file: any,
+                                                                    idx: number
+                                                                ) => {
+                                                                    handleDownloadFile(
+                                                                        file
+                                                                    );
+                                                                }
+                                                            )
+                                                        }
+                                                    >
+                                                        Download All Individual Files
+                                                    </button>
+                                                    <button
+                                                        onClick={handleDownloadAllAsZip}
+                                                    >
+                                                        Download All As .ZIP
                                                     </button>
                                                 </>
                                             )}
@@ -200,12 +290,15 @@ const DeleteConfirmation = ({
             await deleteDoc(doc(db, "buckets", bucketid as string));
 
             // If it's a file bucket, delete the file from Firebase Storage
-            if (bucketData.type === "file_upload") {
-                const fileRef = ref(
-                    storage,
-                    `buckets/${bucketid}/${bucketData.filename}`
-                );
-                await deleteObject(fileRef);
+            if (bucketData.type === "file_upload" && bucketData.files) {
+                for (const file of bucketData.files) {
+                    const fileRef = ref(storage, `buckets/${bucketid}/${file.name}`);
+                    try {
+                        await deleteObject(fileRef);
+                    } catch (err) {
+                        console.warn(`Failed to delete ${file.name}:`, err);
+                    }
+                }
             }
 
             enqueueSnackbar("Bucket destroyed successfully!", { variant: "success" });
