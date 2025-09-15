@@ -173,7 +173,9 @@ const BucketPage = () => {
                     bucketExists && (
                         <>
                             <section className="fadeIn">
-                                <h1>Bucket ({bucketid})</h1>
+                                <h1>
+                                    Bucket <code>{bucketid}</code>
+                                </h1>
                                 <div className={styles.shareOptions}>
                                     <button
                                         className={styles.shareButton}
@@ -314,7 +316,8 @@ const BucketPage = () => {
                                     </div>
                                 ) : (
                                     <p>
-                                        You do not have the permission to manage this bucket.
+                                        You do not have the permission to manage this
+                                        bucket.
                                     </p>
                                 )}
                             </section>
@@ -394,8 +397,7 @@ const DeleteConfirmation = ({
             <Modal open={open} onClose={handleClose}>
                 <Box sx={style} className={styles.modalBox}>
                     <p>
-                        Are you sure you want to destroy this bucket ({bucketid})
-                        manually?
+                        Are you sure you want to destroy this bucket <code>{bucketid}</code> manually?
                     </p>
                     <div>
                         <Button

@@ -1,5 +1,9 @@
 @import './Vars'
     
+@font-face 
+    font-family: "Jets"
+    src: url('./fonts/JetBrains.ttf')    
+
 .container
     display: flex
     flex-direction: column
@@ -23,3 +27,5 @@
 
         input[type="text"]
             @include input-field()
+            font-family: Jets !important
+            font-weight: 900
